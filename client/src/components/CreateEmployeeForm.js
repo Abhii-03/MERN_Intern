@@ -8,7 +8,7 @@ import Navbar from "./Navbar";
 const EmployeeForm = () => {
   const SERVER_URL = process.env.REACT_APP_VITE_API_URL;
   const navigate = useNavigate();
-  
+
   const localStorageData = JSON.parse(localStorage.getItem("Profile"));
   const user_id = localStorageData?.user?._id;
 
@@ -21,7 +21,10 @@ const EmployeeForm = () => {
     course: [],
     file: null,
     created_by: user_id,
+    imgUpload: undefined,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -38,11 +41,101 @@ const EmployeeForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+
+  const postPicToServer = (pic) => {
+    setLoading(true)
+    if (pic === undefined) {
+      console.log("Undefined")
+      toast.error("Please Select an Image")
+      return;
+    }
+    console.log(pic.type);
+    if (pic.type === 'image/jpeg' || pic.type === 'image/png' || pic.type === 'image/gif') {
+      console.log('If Block');
+
+      const data = new FormData();
+      data.append('file', pic);
+      data.append('upload_preset', 'chatty');          // upload preset 
+      data.append('cloud_name', 'dezifvepx');          // cloud name
+      fetch('https://api.cloudinary.com/v1_1/dezifvepx/image/upload', {        // Cross Check the URL /image/upload reh gya shayad
+        method: 'post',
+        body: data
+
+      }).then((res) => res.json()).then((data) => {
+        // formData.imgUpload(data.url.toString());
+        setFormData({ ...formData, imgUpload: data.url.toString() });
+        console.log(data);
+        toast.success("Image Uploaded Successfully To Cloudinary")
+        setLoading(false);
+      }).catch((error) => {
+        console.log(error);
+        setLoading(false);
+      })
+    } else {
+      console.log('Else Block');
+      toast.error("Please Select an Image")
+      setLoading(false);
+      return;
+    }
+  }
+
+
+  const validate = () => {
+    const {
+      name,
+      email,
+      mobile,
+      designation,
+      gender,
+      course,
+    } = formData;
+
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return false;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      toast.error("Invalid email format");
+      return false;
+    }
+
+    const mobilePattern = /^[0-9]{10}$/;
+    if (!mobilePattern.test(mobile)) {
+      toast.error("Invalid mobile number");
+      return false;
+    }
+
+    if (!designation) {
+      toast.error("Designation is required");
+      return false;
+    }
+
+    if (!gender) {
+      toast.error("Gender is required");
+      return false;
+    }
+
+    if (course.length === 0) {
+      toast.error("At least one course must be selected");
+      return false;
+    }
+
+
+
+    return true;
+  }
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) {
+      return;
+    }
     console.log("Form Submitted: ", formData);
-    
-    const { data } = axios
+    // Add validation and server requests here
+    await axios
       .post(`${SERVER_URL}/api/v1/employee/add-emp`, formData)
       .then((response) => {
         console.log(response.data);
@@ -59,7 +152,7 @@ const EmployeeForm = () => {
       });
   };
 
- 
+
 
   return (
     <div>
@@ -70,7 +163,7 @@ const EmployeeForm = () => {
           className="w-full max-w-lg p-8 bg-white rounded-lg shadow-md flex flex-col  "
         >
           <div className="">
-            
+            {/* Name */}
             <div className="mb-4 flex justify-between items-center">
               <label
                 htmlFor="name"
@@ -90,7 +183,7 @@ const EmployeeForm = () => {
               />
             </div>
 
-           
+            {/* Email */}
             <div className="mb-4 flex justify-between items-center">
               <label
                 htmlFor="email"
@@ -110,7 +203,7 @@ const EmployeeForm = () => {
               />
             </div>
 
-           
+            {/* Mobile Number */}
             <div className="mb-4 flex justify-between items-center">
               <label
                 htmlFor="mobile"
@@ -120,19 +213,18 @@ const EmployeeForm = () => {
               </label>
               <input
                 type="tel"
-                pattern="[0-9]{3}"
+                // pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}"
                 name="mobile"
                 id="mobile"
-                maxLength={10}
                 value={formData.mobile}
                 onChange={handleChange}
                 required
-                placeholder="Enter your mobile number"
+                placeholder="Enter 10 digit mobile number exp: 1234567890" 
                 className="w-80 px-4 py-2 mt-2 text-sm text-gray-800 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
               />
             </div>
 
-            
+            {/* Designation */}
             <div className="mb-4 flex justify-between items-center">
               <label className="text-lg  font-medium text-gray-600">
                 Designation
@@ -153,7 +245,7 @@ const EmployeeForm = () => {
               </select>
             </div>
 
-            
+            {/* Gender */}
             <div className="mb-4 flex justify-between items-center">
               <label className="text-lg  font-medium text-gray-600">
                 Gender
@@ -184,7 +276,7 @@ const EmployeeForm = () => {
               </div>
             </div>
 
-            
+            {/* Course */}
             <div className="mb-4 flex justify-between items-center">
               <label className="text-lg  font-medium text-gray-600">
                 Course
@@ -206,36 +298,36 @@ const EmployeeForm = () => {
             </div>
 
             {/* File Upload */}
-            {/* <div className="mb-4 flex justify-between items-center">
-            <label
-              htmlFor="file"
-              className="text-lg  font-medium text-gray-600"
-            >
-              Image Upload
-            </label>
-            <input
-              type="file"
-              name="file"
-              id="file"
-              accept="image/jpeg, image/png"
-              onChange={handleChange}
-              required
-              className=" px-4 py-2 mt-2 text-sm text-gray-800 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-            />
-          </div> */}
+            <div className="mb-4 flex justify-between items-center">
+              <label
+                htmlFor="file"
+                className="text-lg  font-medium text-gray-600"
+              >
+                Image Upload
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => postPicToServer(e.target.files[0])}
+                required
+                className=" px-4 py-2 mt-2 text-sm text-gray-800 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+              />
+            </div>
 
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={loading}
+              loading={loading}
               className="w-full px-4 py-2 mt-2  text-gray-800 border text-lg font-medium bg-green-400 
                   rounded-lg  hover:border-black "
               onClick={handleSubmit}
             >
-              Submit
+              {loading ? "Uploading..." : "Save"}
             </button>
           </div>
         </form>
-       
+
       </div>
     </div>
   );

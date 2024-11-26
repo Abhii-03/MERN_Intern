@@ -66,7 +66,7 @@ const Signup = () => {
           onSubmit={submitHandler}
           className="w-full max-w-lg p-8 bg-white rounded-lg shadow-md flex flex-col"
         >
-          {/* name */}
+          
           <div className="mb-4 flex justify-between items-center">
             <label
               htmlFor="name"
@@ -86,7 +86,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* Email Address */}
+         
           <div className="mb-4 flex justify-between items-center">
             <label
               htmlFor="email"
@@ -106,7 +106,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* Create Password */}
+        
           <div className="mb-4 flex justify-between items-center">
             <label
               htmlFor="createPassword"
@@ -126,7 +126,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* Confirm Password */}
+          
           <div className="mb-4 flex justify-between items-center">
             <label
               htmlFor="confirmPassword"
@@ -146,7 +146,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* Submit Button */}
+        
           <button
             type="submit"
             className="w-full py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

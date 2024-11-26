@@ -17,7 +17,7 @@ const Navbar = () => {
 
     return (
         <div>
-            {/* Navbar */}
+        
             <nav className="bg-indigo-600 text-white py-3 px-16   shadow-md">
 
                 <div className="flex justify-between ">
@@ -45,7 +45,7 @@ const Navbar = () => {
                     <div className="flex w-96 justify-evenly">
                         <div>
                             <Link
-                                // to="/profile"
+                                
                                 className="hover:text-gray-200 transition duration-200"
                             >
                                 {user_name}
@@ -53,7 +53,7 @@ const Navbar = () => {
                         </div>
                         <div>
                             <button
-                                // to="/logout"
+                                
                                 onClick={handleLogout}
                                 className="hover:text-gray-200 transition duration-200"
                             >

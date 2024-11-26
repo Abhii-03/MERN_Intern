@@ -3,9 +3,17 @@ const Employee = require("../models/Employee.js");
 
 // Add Employee
 exports.addEmployee = async (req, res) => {
-  const { name, email, mobile, designation, gender, course, created_by } = req.body;
+  const { name, email, mobile, designation, gender, course, created_by, imgUpload } = req.body;
 
-  if (!name || !email || !mobile || !designation || !gender || !course) {
+  if (
+    !name ||
+    !email ||
+    !mobile ||
+    !designation ||
+    !gender ||
+    !course ||
+    !imgUpload
+  ) {
     return res.status(400).json({
       success: false,
       message: "Please enter all fields",
@@ -35,6 +43,7 @@ exports.addEmployee = async (req, res) => {
       designation,
       gender,
       course,
+      imgUpload,
       created_by,
     });
 
@@ -57,7 +66,7 @@ exports.getAllEmployees = async (req, res) => {
   const { id: _id } = req.params;
 
   try {
-    const employees = await Employee.find({ created_by : _id });
+    const employees = await Employee.find({ created_by: _id });
     if (!employees || employees.length === 0) {
       return res.status(404).json({
         success: false,
@@ -114,7 +123,7 @@ exports.getEmployeeSingle = async (req, res) => {
 // Edit Employee
 exports.editEmployeeSingle = async (req, res) => {
   const { id: _id } = req.params;
-  const { name, email, mobile, designation, gender, course } = req.body;
+  const { name, email, mobile, designation, gender, course, imgUpload } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     return res.status(404).json({
@@ -126,7 +135,7 @@ exports.editEmployeeSingle = async (req, res) => {
   try {
     const updatedEmployee = await Employee.findByIdAndUpdate(
       _id,
-      { $set: { name, email, mobile, designation, gender, course } },
+      { $set: { name, email, mobile, designation, gender, course, imgUpload } },
       { new: true }
     );
 
@@ -175,6 +184,55 @@ exports.deleteEmployee = async (req, res) => {
       success: true,
       message: "Employee deleted successfully",
       result: deletedEmployee,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+};
+
+
+
+
+exports.searchEmployees = async (req, res) => {
+  const { id: created_by } = req.params; 
+  const { search } = req.query; 
+
+  if (!mongoose.Types.ObjectId.isValid(created_by)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid user ID",
+    });
+  }
+
+  try {
+    
+    const searchCriteria = {
+      created_by,
+      $or: [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { mobile: { $regex: search, $options: "i" } },
+      ],
+    };
+
+    
+    const employees = await Employee.find(searchCriteria);
+
+    if (!employees || employees.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No employees found matching the search criteria",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Employees retrieved successfully",
+      result: employees,
     });
   } catch (err) {
     return res.status(500).json({
